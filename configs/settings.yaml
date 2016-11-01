@@ -827,7 +827,7 @@ cost_shifters:
 development_limits:
   default:
     Office:
-      'Alameda': 100
+      'Alameda': 90
       'Atherton': 0
       'Belvedere': 0
       'Belmont': 0
@@ -855,11 +855,12 @@ development_limits:
       'Palo Alto': 175
       'Petaluma': 150
       'Piedmont': 0
-      'Pleasanton': 285
+      'Pleasanton': 250
       'Portola Valley': 0
       'Redwood City': 550
       'Ross': 0
       'San Anselmo': 0
+      'San Bruno': 80
       'San Francisco': 3500
       'San Mateo': 200
       'San Rafael': 0
