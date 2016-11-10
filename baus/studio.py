@@ -244,7 +244,7 @@ def update_bart(year, build_year, parcels_geography, alternative, parcels_geogra
     # Temporary before/after check on whether update happened
     # Won't quite work if we use categories other than bart1
     pg = parcels_geography.to_frame(columns=['tpp_id'])
-    bart1 = len([pg.tpp_id == 'bart1'])
+    bart1 = len(pg[pg.tpp_id == 'bart1'])
     print "Year {}, number of parcels within bart1 zone before step: {}".format(year, bart1)
 
     if (year == build_year) & alternative:
@@ -277,5 +277,5 @@ def update_bart(year, build_year, parcels_geography, alternative, parcels_geogra
                 reindex(buildings.index).fillna('none')
 
     pg = orca.get_table('parcels_geography').to_frame(columns=['tpp_id'])
-    bart1 = len([pg.tpp_id == 'bart1'])
+    bart1 = len(pg[pg.tpp_id == 'bart1'])
     print "Year {}, number of parcels within bart1 zone after step: {}".format(year, bart1)

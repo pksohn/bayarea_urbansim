@@ -22,7 +22,8 @@ parser = argparse.ArgumentParser()
 parser.add_argument('-i', '--interact', action='store_true', help='Launch in interactive mode')
 parser.add_argument('-d', '--display', action='store_true', help='Print stdout to terminal instead of log')
 parser.add_argument('--scen', type=int, help='Scenario number')
-parser.add_argument('--save', type=int, help='Save results to HDF5 files every specified number of years')
+parser.add_argument('--save', type=int, help='Specify number of years between saves')
+parser.add_argument('--nosave', type=int, help='Do not save files')
 parser.add_argument('--start', type=int, help='Start year')
 parser.add_argument('--end', type=int, help='End year')
 parser.add_argument('--step', type=int, help='Model every x year')
@@ -31,7 +32,11 @@ parser.add_argument('--build', type=int, help='Year that alternative becomes ava
 args = parser.parse_args()
 
 # Define defaults and modify with command line arguments
-start, end, LOGS, SAVE, EVERY_NTH_YEAR, SCENARIO, alt, build = 2010, 2035, True, True, 1, 0, None, 2025
+start, end = 2010, 2035
+LOGS, SAVE, save_step = True, True, 25
+EVERY_NTH_YEAR, SCENARIO = 5, 0
+alt, build = None, 2025
+
 if args.start:
     start = args.start
 if args.end:
@@ -39,8 +44,9 @@ if args.end:
 if args.display:
     LOGS = False
 if args.save:
-    SAVE = True
-    orca.add_injectable("save_step", args.save)
+    save_year = args.save
+if args.nosave:
+    SAVE = False
 if args.interact:
     LOGS = False
     import code
@@ -49,8 +55,7 @@ if args.interact:
 if args.step:
     EVERY_NTH_YEAR = args.step
 if args.scen:
-    orca.add_injectable("scenario", args.scen)
-    SCENARIO = orca.get_injectable("scenario")
+    SCENARIO = args.scen
 if args.alt:
     alt = args.alt
 if args.build:
@@ -62,6 +67,8 @@ slack = Slacker(slack.token)
 host = socket.gethostname()
 
 run_num = orca.get_injectable("run_number")
+orca.add_injectable("save_step", save_step)
+orca.add_injectable("scenario", SCENARIO)
 orca.add_injectable("years_per_iter", EVERY_NTH_YEAR)
 orca.add_injectable("start_year", start)
 orca.add_injectable("end_year", end)
