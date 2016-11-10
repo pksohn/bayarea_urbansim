@@ -23,7 +23,7 @@ parser.add_argument('-i', '--interact', action='store_true', help='Launch in int
 parser.add_argument('-d', '--display', action='store_true', help='Print stdout to terminal instead of log')
 parser.add_argument('--scen', type=int, help='Scenario number')
 parser.add_argument('--save', type=int, help='Specify number of years between saves')
-parser.add_argument('--nosave', type=int, help='Do not save files')
+parser.add_argument('--nosave', action='store_true', help='Do not save files')
 parser.add_argument('--start', type=int, help='Start year')
 parser.add_argument('--end', type=int, help='End year')
 parser.add_argument('--step', type=int, help='Model every x year')
