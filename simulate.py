@@ -21,7 +21,7 @@ pd.set_option('display.float_format', lambda x: '%.3f' % x)
 parser = argparse.ArgumentParser()
 parser.add_argument('-i', '--interact', action='store_true', help='Launch in interactive mode')
 parser.add_argument('-d', '--display', action='store_true', help='Print stdout to terminal instead of log')
-parser.add_argument('-s', '--scenario', type=int, help='Scenario number')
+parser.add_argument('--scen', type=int, help='Scenario number')
 parser.add_argument('--save', type=int, help='Save results to HDF5 files every specified number of years')
 parser.add_argument('--start', type=int, help='Start year')
 parser.add_argument('--end', type=int, help='End year')
@@ -29,7 +29,7 @@ parser.add_argument('--step', type=int, help='Model every x year')
 args = parser.parse_args()
 
 # Define defaults and modify with command line arguments
-start, end, LOGS, SAVE, EVERY_NTH_YEAR = 2010, 2010, True, False, 1
+start, end, LOGS, SAVE, EVERY_NTH_YEAR, SCENARIO = 2010, 2010, True, False, 1, 0
 if args.start:
     start = args.start
 if args.end:
@@ -48,6 +48,7 @@ if args.step:
     EVERY_NTH_YEAR = args.step
 if args.scenario:
     orca.add_injectable("scenario", args.scenario)
+    SCENARIO = orca.get_injectable("scenario")
 
 SLACK = True
 MODE = "simulation"
@@ -58,7 +59,6 @@ run_num = orca.get_injectable("run_number")
 orca.add_injectable("years_per_iter", EVERY_NTH_YEAR)
 orca.add_injectable("start_year", start)
 orca.add_injectable("end_year", end)
-SCENARIO = orca.get_injectable("scenario")
 
 if LOGS:
     print '***The Standard stream is being written to /runs/run{0}.log***' \
@@ -66,7 +66,7 @@ if LOGS:
     sys.stdout = sys.stderr = open("runs/run%d.log" % run_num, 'w')
 
 
-def get_simulation_models(SCENARIO):
+def get_simulation_models(SCENARIO, SAVE):
 
     models = [
         "neighborhood_vars",            # local accessibility vars
@@ -109,6 +109,9 @@ def get_simulation_models(SCENARIO):
         "travel_model_output"
     ]
 
+    if not SAVE:
+        models.remove('studio_save_tables')
+
     # calculate VMT taxes
     if SCENARIO in ["1", "3", "4"]:
         # calculate the vmt fees at the end of the year
@@ -139,14 +142,14 @@ def get_simulation_models(SCENARIO):
     return models
 
 
-def run_models(MODE, SCENARIO):
+def run_models(MODE, SCENARIO, SAVE):
 
     orca.run(["correct_baseyear_data"])
 
     if MODE == "simulation":
 
         years_to_run = range(start, end+1, EVERY_NTH_YEAR)
-        models = get_simulation_models(SCENARIO)
+        models = get_simulation_models(SCENARIO, SAVE)
         orca.run(models, iter_vars=years_to_run)
 
     elif MODE == "estimation":
@@ -212,9 +215,6 @@ def run_models(MODE, SCENARIO):
 
         raise "Invalid mode"
 
-if not SAVE:
-    models.remove('studio_save_tables')
-
 print "Started", time.ctime()
 print "Current Scenario : ", orca.get_injectable('scenario').rstrip()
 
@@ -227,7 +227,7 @@ if SLACK:
 
 try:
 
-    run_models(MODE, SCENARIO)
+    run_models(MODE, SCENARIO, SAVE)
 
 except Exception as e:
     print traceback.print_exc()
