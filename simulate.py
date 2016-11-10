@@ -68,6 +68,7 @@ host = socket.gethostname()
 
 run_num = orca.get_injectable("run_number")
 orca.add_injectable("save_step", save_step)
+SCENARIO = str(SCENARIO)
 orca.add_injectable("scenario", SCENARIO)
 orca.add_injectable("years_per_iter", EVERY_NTH_YEAR)
 orca.add_injectable("start_year", start)
