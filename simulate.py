@@ -46,8 +46,8 @@ if args.interact:
     sys.exit()
 if args.step:
     EVERY_NTH_YEAR = args.step
-if args.scenario:
-    orca.add_injectable("scenario", args.scenario)
+if args.scen:
+    orca.add_injectable("scenario", args.scen)
     SCENARIO = orca.get_injectable("scenario")
 
 SLACK = True
