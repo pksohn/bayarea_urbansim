@@ -1,7 +1,11 @@
+import os
 import orca
 import pandas as pd
+from urbansim.utils import misc
 from urbansim_defaults import utils
 from urbansim.developer.developer import Developer as dev
+from utils import geom_id_to_parcel_id
+import numpy as np
 
 
 @orca.step('studio_save_tables')
@@ -229,3 +233,49 @@ def studio_office_developer(feasibility, jobs, buildings, parcels, year,
                 new_buildings["subsidized"] = False
 
             summary.add_parcel_output(new_buildings)
+
+
+@orca.step()
+def update_bart(year, build_year, parcels_geography, alternative, parcels_geography_alternatives):
+    """
+    Updates registration of 'parcels_geography' table, which includes information on transit.
+    """
+
+    # Temporary before/after check on whether update happened
+    # Won't quite work if we use categories other than bart1
+    pg = parcels_geography.to_frame(columns=['tpp_id'])
+    bart1 = len([pg.tpp_id == 'bart1'])
+    print "Year {}, number of parcels within bart1 zone before step: {}".format(year, bart1)
+
+    if (year == build_year) & alternative:
+
+        filename = parcels_geography_alternatives[alternative]
+
+        @orca.table(cache=True)
+        def parcels_geography(parcels):
+            df = pd.read_csv(os.path.join(misc.data_dir(),
+                                          filename),
+                             index_col="geom_id", dtype={'jurisdiction': 'str'})
+            df = geom_id_to_parcel_id(df, parcels)
+
+            juris_name = pd.read_csv(os.path.join(misc.data_dir(),
+                                                  "census_id_to_name.csv"),
+                                     index_col="census_id").name10
+            df["juris_name"] = df.jurisdiction_id.map(juris_name)
+            df["pda_id"] = df.pda_id.str.lower()
+            df["pda_id"] = df.pda_id.replace("dan1", np.nan)
+
+            return df
+
+        # this specifies the relationships between tables
+        orca.broadcast('parcels_geography', 'buildings', cast_index=True,
+                       onto_on='parcel_id')
+
+        @orca.column('buildings', cache=True)
+        def transit_type(buildings, parcels_geography):
+            return misc.reindex(parcels_geography.tpp_id, buildings.parcel_id). \
+                reindex(buildings.index).fillna('none')
+
+    pg = orca.get_table('parcels_geography').to_frame(columns=['tpp_id'])
+    bart1 = len([pg.tpp_id == 'bart1'])
+    print "Year {}, number of parcels within bart1 zone after step: {}".format(year, bart1)

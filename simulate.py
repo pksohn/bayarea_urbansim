@@ -26,10 +26,12 @@ parser.add_argument('--save', type=int, help='Save results to HDF5 files every s
 parser.add_argument('--start', type=int, help='Start year')
 parser.add_argument('--end', type=int, help='End year')
 parser.add_argument('--step', type=int, help='Model every x year')
+parser.add_argument('--alt', type=int, help='Alternative number')
+parser.add_argument('--build', type=int, help='Year that alternative becomes available')
 args = parser.parse_args()
 
 # Define defaults and modify with command line arguments
-start, end, LOGS, SAVE, EVERY_NTH_YEAR, SCENARIO = 2010, 2010, True, False, 1, 0
+start, end, LOGS, SAVE, EVERY_NTH_YEAR, SCENARIO, alt, build = 2010, 2035, True, True, 1, 0, None, 2025
 if args.start:
     start = args.start
 if args.end:
@@ -49,6 +51,10 @@ if args.step:
 if args.scen:
     orca.add_injectable("scenario", args.scen)
     SCENARIO = orca.get_injectable("scenario")
+if args.alt:
+    alt = args.alt
+if args.build:
+    build = args.build
 
 SLACK = True
 MODE = "simulation"
@@ -59,6 +65,19 @@ run_num = orca.get_injectable("run_number")
 orca.add_injectable("years_per_iter", EVERY_NTH_YEAR)
 orca.add_injectable("start_year", start)
 orca.add_injectable("end_year", end)
+orca.add_injectable("alternative", alt)
+orca.add_injectable("build_year", build)
+
+
+@orca.injectable()
+def parcels_geography_alternatives():
+    return {
+        1: 'parcels_geography_alt1.csv',
+        2: 'parcels_geography_alt2.csv',
+        3: 'parcels_geography_alt3.csv',
+        4: 'parcels_geography_alt4.csv',
+    }
+
 
 if LOGS:
     print '***The Standard stream is being written to /runs/run{0}.log***' \
@@ -69,6 +88,8 @@ if LOGS:
 def get_simulation_models(SCENARIO, SAVE):
 
     models = [
+        "update_bart",                  # Update with new BART stations if applicable
+
         "neighborhood_vars",            # local accessibility vars
         "regional_vars",                # regional accessibility vars
 
