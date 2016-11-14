@@ -247,7 +247,7 @@ def update_bart(year, build_year, parcels_geography, alternative, parcels_geogra
     bart1 = len(pg[pg.tpp_id == 'bart1'])
     print "Year {}, number of parcels within bart1 zone before step: {}".format(year, bart1)
 
-    if (year == build_year) & alternative:
+    if (year == build_year) & (alternative is not None):
 
         filename = parcels_geography_alternatives[alternative]
 
