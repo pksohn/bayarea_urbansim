@@ -97,6 +97,7 @@ def get_simulation_models(SCENARIO, SAVE):
 
     models = [
         "update_bart",                  # Update with new BART stations if applicable
+        "connect_oakland",              # Make I-980 parcels developable
 
         "neighborhood_vars",            # local accessibility vars
         "regional_vars",                # regional accessibility vars

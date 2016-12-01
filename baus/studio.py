@@ -279,3 +279,53 @@ def update_bart(year, build_year, parcels_geography, alternative, parcels_geogra
     pg = orca.get_table('parcels_geography').to_frame(columns=['tpp_id'])
     bart1 = len(pg[pg.tpp_id == 'bart1'])
     print "Year {}, number of parcels within bart1 zone after step: {}".format(year, bart1)
+
+
+@orca.step()
+def connect_oakland(year, build_year, alternative):
+
+    if (year == build_year) & (alternative in ['2', '5', '6']):
+
+        print "Build year, reuploading new parcels with Connect Oakland zoning"
+
+        # zoning for use in the "baseline" scenario
+        # comes in the hdf5
+        @orca.table('zoning_baseline', cache=True)
+        def zoning_baseline(parcels, zoning_lookup, settings):
+            df = pd.read_csv(os.path.join(misc.data_dir(),
+                                          "2015_12_21_zoning_parcels.csv"),
+                             index_col="geom_id")
+            df = pd.merge(df, zoning_lookup.to_frame(),
+                          left_on="zoning_id", right_index=True)
+            df = geom_id_to_parcel_id(df, parcels)
+
+            d = {k: "type%d" % v for k, v in settings["building_type_map2"].items()}
+
+            df.columns = [d.get(x, x) for x in df.columns]
+
+            return df
+
+        @orca.table('zoning_scenario', cache=True)
+        def zoning_scenario(parcels_geography, scenario, settings):
+
+            scenario_zoning = pd.read_csv(
+                os.path.join(misc.data_dir(),
+                             'zoning_mods_%s.csv' % scenario),
+                dtype={'jurisdiction': 'str'})
+
+            d = {k: "type%d" % v for k, v in settings["building_type_map2"].items()}
+
+            for k, v in d.items():
+                scenario_zoning['add-' + v] = scenario_zoning.add_bldg.str.contains(k)
+
+            for k, v in d.items():
+                scenario_zoning['drop-' + v] = scenario_zoning.drop_bldg. \
+                    astype(str).str.contains(k)
+
+            return pd.merge(parcels_geography.to_frame().reset_index(),
+                            scenario_zoning,
+                            on=['zoningmodcat'],
+                            how='left').set_index('parcel_id')
+
+    else:
+        print "Not build year, skipping Connect Oakland parcel step"
