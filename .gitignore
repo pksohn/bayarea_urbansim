@@ -37,8 +37,10 @@ data/*.ipynb
 data/poly*
 data/parcels_for_gis.csv
 data/connect_oakland*
+data/parcels_zoning_connect_oakland.csv
 *.h5
 results/*.csv
 results/*.xls
 results/*.xlsx
 slack.py
+results/*.sh
