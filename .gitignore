@@ -36,7 +36,6 @@ data/parcels_geography_alt*.csv
 data/*.ipynb
 data/poly*
 data/parcels_for_gis.csv
-data/connect_oakland*
 data/zoning_parcels_connect_oakland.csv
 *.h5
 results/*.csv
