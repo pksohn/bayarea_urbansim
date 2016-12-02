@@ -153,14 +153,14 @@ def parcels_geo_combined(poi_x_bart, poi_y_bart, poi_x_std, poi_y_std,
     nearest = net.nearest_pois(3000, "bart", num_pois=1)
     nearest.columns = ['dist_bart']
     pg = pg.merge(nearest, how='left', left_on='node_id', right_index=True)
-    pg['within_bart'] = pg.apply(lambda row: 1 if row.dist < dist else 0, axis=1)
+    pg['within_bart'] = pg.apply(lambda row: 1 if row.dist_bart < dist else 0, axis=1)
 
     pg.tpp_id = pg.apply(lambda row: tpp_id_value_bart if row.within_bart == 1 else row.tpp_id, axis=1)
 
     nearest = net.nearest_pois(3000, "std", num_pois=1)
     nearest.columns = ['dist_std']
     pg = pg.merge(nearest, how='left', left_on='node_id', right_index=True)
-    pg['within_std'] = pg.apply(lambda row: 1 if row.dist < dist else 0, axis=1)
+    pg['within_std'] = pg.apply(lambda row: 1 if row.dist_std < dist else 0, axis=1)
 
     def change_tpp(row):
         higher_tpp_values = ['bart1', 'bart2', 'bart3a', 'lrt1']
@@ -171,6 +171,6 @@ def parcels_geo_combined(poi_x_bart, poi_y_bart, poi_x_std, poi_y_std,
 
     pg.tpp_id = pg.apply(change_tpp, axis=1)
 
-    pg.drop(['x', 'y', 'node_id', 'dist', 'within'], axis=1, inplace=True)
+    pg.drop(['x', 'y', 'node_id', 'dist_bart', 'within_bart', 'dist_std', 'within_std'], axis=1, inplace=True)
 
     pg.to_csv(csv_name, index=False)

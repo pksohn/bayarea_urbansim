@@ -84,6 +84,8 @@ def parcels_geography_alternatives():
         2: 'parcels_geography_alt2.csv',
         3: 'parcels_geography_alt3.csv',
         4: 'parcels_geography_alt4.csv',
+        5: 'parcels_geography_alt5.csv',
+        6: 'parcels_geography_alt6.csv'
     }
 
 
