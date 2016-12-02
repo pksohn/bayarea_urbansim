@@ -323,7 +323,7 @@ def zoning_table_city_lookup():
 @orca.table('zoning_baseline', cache=True)
 def zoning_baseline(parcels, zoning_lookup, settings, alternative):
 
-    if alternative in ['2', '5', '6']:
+    if alternative in [2, 5, 6]:
         zoning_parcels = "zoning_parcels_connect_oakland.csv"
     else:
         zoning_parcels = "2015_12_21_zoning_parcels.csv"

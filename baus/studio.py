@@ -284,7 +284,7 @@ def update_bart(year, build_year, parcels_geography, alternative, parcels_geogra
 @orca.step()
 def connect_oakland(year, build_year, alternative):
 
-    if (year == build_year) & (alternative in ['2', '5', '6']):
+    if (year == build_year) & (alternative in [2, 5, 6]):
 
         print "Build year, reuploading new parcels with Connect Oakland zoning"
 
