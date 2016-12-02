@@ -328,6 +328,8 @@ def zoning_baseline(parcels, zoning_lookup, settings, alternative):
     else:
         zoning_parcels = "2015_12_21_zoning_parcels.csv"
 
+    print "Registering zoning_baseline from {}".format(zoning_parcels)
+
     df = pd.read_csv(os.path.join(misc.data_dir(),
                      zoning_parcels),
                      index_col="geom_id")
