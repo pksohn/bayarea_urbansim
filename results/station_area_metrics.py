@@ -68,8 +68,7 @@ def metrics(net, hdf, stations, alt_number, dist=805, out='station_area_results.
         s = s.add(1)
         households_stations['income_quartile'] = s
 
-    if '2015_09_01_bayarea_v3' in hdf:
-        baseline = True
+    baseline = True if '2015_09_01_bayarea_v3' in hdf else False
 
     # Get dataframe of metrics by station area
     for index, series in alt.iterrows():
