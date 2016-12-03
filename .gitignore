@@ -42,6 +42,5 @@ results/*.csv
 results/*.xls
 results/*.xlsx
 slack.py
-results/*.sh
 data/parcels_changed*
 data/*example.csv
