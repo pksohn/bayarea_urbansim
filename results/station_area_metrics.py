@@ -68,6 +68,9 @@ def metrics(net, hdf, stations, alt_number, dist=805, out='station_area_results.
         s = s.add(1)
         households_stations['income_quartile'] = s
 
+    if '2015_09_01_bayarea_v3' in hdf:
+        baseline = True
+
     # Get dataframe of metrics by station area
     for index, series in alt.iterrows():
 
@@ -84,15 +87,15 @@ def metrics(net, hdf, stations, alt_number, dist=805, out='station_area_results.
             alt.loc[index, 'income_median'] = hh.income.median()
 
             for i in range(1, 5):
-
                 alt.loc[index, 'income_quartile{}_count'.format(i)] = len(hh[hh.income_quartile == i])
                 alt.loc[index, 'income_quartile{}_pct'.format(i)] = len(hh[hh.income_quartile == i]) / len(hh)
 
             alt.loc[index, 'res_units'] = b.residential_units.sum()
             alt.loc[index, 'nonres_sqft'] = b.non_residential_sqft.sum()
 
-            alt.loc[index, 'soft_site_count'] = len(p[p.zoned_du_underbuild >= 1])
-            alt.loc[index, 'soft_site_pct'] = len(p[p.zoned_du_underbuild >= 1]) / len(p)
+            if not baseline:
+                alt.loc[index, 'soft_site_count'] = len(p[p.zoned_du_underbuild >= 1])
+                alt.loc[index, 'soft_site_pct'] = len(p[p.zoned_du_underbuild >= 1]) / len(p)
 
     alt.to_csv(out)
 
