@@ -62,11 +62,11 @@ def metrics(net, hdf, stations, alt_number, dist=805, out='station_area_results.
     jobs_stations = jobs[jobs.station.isnull() == False]
 
     # Calculate income_quartile if nonexistent (i.e. in baseline data)
-    if 'income_quartile' not in households.columns:
-        s = pd.Series(pd.qcut(households.income, 4, labels=False), index=households.index)
+    if 'income_quartile' not in households_stations.columns:
+        s = pd.Series(pd.qcut(households_stations.income, 4, labels=False), index=households_stations.index)
         # convert income quartile from 0-3 to 1-4
         s = s.add(1)
-        households['income_quartile'] = s
+        households_stations['income_quartile'] = s
 
     # Get dataframe of metrics by station area
     for index, series in alt.iterrows():
