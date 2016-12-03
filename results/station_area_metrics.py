@@ -61,29 +61,38 @@ def metrics(net, hdf, stations, alt_number, dist=805, out='station_area_results.
     households_stations = households[households.station.isnull() == False]
     jobs_stations = jobs[jobs.station.isnull() == False]
 
+    # Calculate income_quartile if nonexistent (i.e. in baseline data)
+    if 'income_quartile' not in households.columns:
+        s = pd.Series(pd.qcut(households.income, 4, labels=False), index=households.index)
+        # convert income quartile from 0-3 to 1-4
+        s = s.add(1)
+        households['income_quartile'] = s
+
     # Get dataframe of metrics by station area
     for index, series in alt.iterrows():
 
-        hh = households_stations[households_stations.station == index]
-        j = jobs_stations[jobs_stations.station == index]
-        p = parcels_stations[parcels_stations.station == index]
-        b = buildings_stations[buildings_stations.station == index]
+        if index != 'placeholder':
 
-        alt.loc[index, 'population'] = hh.persons.sum()
-        alt.loc[index, 'households'] = len(hh)
-        alt.loc[index, 'jobs'] = len(j)
-        alt.loc[index, 'income_median'] = hh.income.median()
+            hh = households_stations[households_stations.station == index]
+            j = jobs_stations[jobs_stations.station == index]
+            p = parcels_stations[parcels_stations.station == index]
+            b = buildings_stations[buildings_stations.station == index]
 
-        for i in range(1, 5):
+            alt.loc[index, 'population'] = hh.persons.sum()
+            alt.loc[index, 'households'] = len(hh)
+            alt.loc[index, 'jobs'] = len(j)
+            alt.loc[index, 'income_median'] = hh.income.median()
 
-            alt.loc[index, 'income_quartile{}_count'.format(i)] = len(hh[hh.income_quartile == i])
-            alt.loc[index, 'income_quartile{}_pct'.format(i)] = len(hh[hh.income_quartile == i]) / len(hh)
+            for i in range(1, 5):
 
-        alt.loc[index, 'res_units'] = b.residential_units.sum()
-        alt.loc[index, 'nonres_sqft'] = b.non_residential_sqft.sum()
+                alt.loc[index, 'income_quartile{}_count'.format(i)] = len(hh[hh.income_quartile == i])
+                alt.loc[index, 'income_quartile{}_pct'.format(i)] = len(hh[hh.income_quartile == i]) / len(hh)
 
-        alt.loc[index, 'soft_site_count'] = len(p[p.zoned_du_underbuild >= 1])
-        alt.loc[index, 'soft_site_pct'] = len(p[p.zoned_du_underbuild >= 1]) / len(p)
+            alt.loc[index, 'res_units'] = b.residential_units.sum()
+            alt.loc[index, 'nonres_sqft'] = b.non_residential_sqft.sum()
+
+            alt.loc[index, 'soft_site_count'] = len(p[p.zoned_du_underbuild >= 1])
+            alt.loc[index, 'soft_site_pct'] = len(p[p.zoned_du_underbuild >= 1]) / len(p)
 
     alt.to_csv(out)
 
