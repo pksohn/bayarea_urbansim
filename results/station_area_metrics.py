@@ -10,7 +10,7 @@ from urbansim.utils import misc
 pd.set_option('display.float_format', lambda x: '%.3f' % x)
 
 
-def metrics(net, hdf, stations, alt_number, dist=805, out='station_area_results.csv'):
+def metrics(net, hdf, stations, scenario, alternative, dist=805, out='station_area_results.csv'):
 
     with pd.HDFStore(net) as store:
         print 'Loading {}'.format(net)
@@ -34,11 +34,13 @@ def metrics(net, hdf, stations, alt_number, dist=805, out='station_area_results.
                   edge_weights=edges[['weight']])
 
     # Load stations and add first row placeholder
-    alt = stations[stations.alternative == alt_number].set_index('station')
-    alt.loc['placeholder'] = [1, -122.0, 37.0]
-    alt = alt.sort('y')
-    print 'Stations:'
-    print alt
+    # alt = stations[stations.alternative == alt_number].set_index('station')
+    # alt.loc['placeholder'] = [1, -122.0, 37.0]
+    # alt = alt.sort('y')
+
+    alt = stations.set_index('station')
+    alt['modeled_scenario'] = scenario
+    alt['modeled_alt'] = alternative
 
     # Set POIs in pandana network and do nearest neighbor analysis
     parcels['node_id'] = net.get_node_ids(parcels.x, parcels.y)
@@ -57,9 +59,9 @@ def metrics(net, hdf, stations, alt_number, dist=805, out='station_area_results.
     jobs['station'] = misc.reindex(buildings['station'], jobs.building_id)
 
     # Filter for those within station buffer
-    buildings_stations = buildings[buildings.station.isnull() == False]
-    households_stations = households[households.station.isnull() == False]
-    jobs_stations = jobs[jobs.station.isnull() == False]
+    buildings_stations = buildings[~buildings.station.isnull()]
+    households_stations = households[~households.station.isnull()]
+    jobs_stations = jobs[~jobs.station.isnull()]
 
     # Calculate income_quartile if nonexistent (i.e. in baseline data)
     if 'income_quartile' not in households_stations.columns:
@@ -87,14 +89,22 @@ def metrics(net, hdf, stations, alt_number, dist=805, out='station_area_results.
 
             for i in range(1, 5):
                 alt.loc[index, 'income_quartile{}_count'.format(i)] = len(hh[hh.income_quartile == i])
-                alt.loc[index, 'income_quartile{}_pct'.format(i)] = len(hh[hh.income_quartile == i]) / len(hh)
+
+                try:
+                    alt.loc[index, 'income_quartile{}_pct'.format(i)] = len(hh[hh.income_quartile == i]) / len(hh)
+                except ZeroDivisionError:
+                    alt.loc[index, 'income_quartile{}_pct'.format(i)] = 0
 
             alt.loc[index, 'res_units'] = b.residential_units.sum()
             alt.loc[index, 'nonres_sqft'] = b.non_residential_sqft.sum()
 
             if not baseline:
                 alt.loc[index, 'soft_site_count'] = len(p[p.zoned_du_underbuild >= 1])
-                alt.loc[index, 'soft_site_pct'] = len(p[p.zoned_du_underbuild >= 1]) / len(p)
+
+                try:
+                    alt.loc[index, 'soft_site_pct'] = len(p[p.zoned_du_underbuild >= 1]) / len(p)
+                except ZeroDivisionError:
+                    alt.loc[index, 'soft_site_pct'] = 0
 
     alt.to_csv(out)
 
@@ -104,7 +114,8 @@ if __name__ == '__main__':
     parser.add_argument('--hdf', type=str, help='HDF5 file with households, parcels, buildings, and jobs tables')
     parser.add_argument('--net', type=str, help='HDF5 file with edges and nodes tables')
     parser.add_argument('--stations', type=str, help='CSV file with stations')
-    parser.add_argument('--alt', type=int, help='Which alternative to use stations for')
+    parser.add_argument('--scen', type=str, help='Which scenario')
+    parser.add_argument('--alt', type=int, help='Which alternative')
     parser.add_argument('--dist', type=int, help='Distance in meters to perform nearest neighbor within')
     parser.add_argument('--out', type=str, help='Filepath to save csv to')
     args = parser.parse_args()
@@ -117,4 +128,10 @@ if __name__ == '__main__':
     if args.out:
         out = args.out
 
-    metrics(args.net, args.hdf, args.stations, args.alt, dist, out)
+    metrics(net=args.net,
+            hdf=args.hdf,
+            stations=args.stations,
+            scenario=args.scen,
+            alternative=args.alt,
+            dist=dist,
+            out=out)
