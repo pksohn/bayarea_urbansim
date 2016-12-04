@@ -2,7 +2,7 @@
 
 SCRIPT=station_area_metrics.py
 NET=./../data/2015_06_01_osm_bayarea4326.h5
-STATIONS=./../data/stations_metrics.csv
+STATIONS=./../data/stations_metrics_unique.csv
 
 # Run on baseline data for all station location sets
 

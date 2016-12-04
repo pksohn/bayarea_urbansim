@@ -42,6 +42,17 @@ def metrics(net, hdf, stations, scenario, alternative, dist=805, out='station_ar
     alt['modeled_scenario'] = scenario
     alt['modeled_alt'] = alternative
 
+    def station_in_modeled_alt(row):
+
+        alt_num = row['modeled_alt']
+        alt_col = 'alt{}'.format(alt_num)
+        if row[alt_col] == 1:
+            return 1
+        else:
+            return 0
+
+    alt['station_in_modeled_alt'] = alt.apply(station_in_modeled_alt, axis=1)
+
     # Set POIs in pandana network and do nearest neighbor analysis
     parcels['node_id'] = net.get_node_ids(parcels.x, parcels.y)
     net.init_pois(num_categories=1, max_dist=805.0, max_pois=1)

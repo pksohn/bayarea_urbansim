@@ -41,7 +41,7 @@ data/zoning_parcels_connect_oakland.csv
 results/*.csv
 results/*.xls
 results/*.xlsx
-results/station_area_results_20161202
+results/station_area_results_*
 slack.py
 data/parcels_changed*
 data/*example.csv
