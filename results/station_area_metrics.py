@@ -46,8 +46,11 @@ def metrics(net, hdf, stations, scenario, alternative, dist=805, out='station_ar
 
         alt_num = row['modeled_alt']
         alt_col = 'alt{}'.format(alt_num)
-        if row[alt_col] == 1:
-            return 1
+        if alt_col in alt.columns:
+            if row[alt_col] == 1:
+                return 1
+            else:
+                return 0
         else:
             return 0
 
