@@ -77,7 +77,7 @@ def metrics(net, hdf, stations, scenario, alternative, pj, dist=805, out='city_r
             return 0
 
     alt['station_in_modeled_alt'] = alt.apply(station_in_modeled_alt, axis=1)
-    alt = alt[alt['station_in_modeled_alt']] == 1
+    alt = alt[alt['station_in_modeled_alt'] == 1]
 
     if len(alt) > 0:
 
