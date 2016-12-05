@@ -72,6 +72,9 @@ def metrics(net, hdf, stations, scenario, alternative, pj, dist=805, out='city_r
 
     # Load station DataFrame as well
     alt = stations.set_index('station')
+    alt['modeled_scenario'] = scenario
+    alt['modeled_alt'] = alternative
+
     alt['station_in_modeled_alt'] = alt.apply(station_in_modeled_alt, axis=1)
     alt = alt[alt['station_in_modeled_alt'] == 1]
 
