@@ -59,6 +59,12 @@ def metrics(net, hdf, stations, scenario, alternative, pj, dist=805, out='city_r
     # Calculate income quartiles
     income_quartile(households_cities)
 
+
+    # Load station DataFrame as well
+    alt = stations.set_index('station')
+    alt['modeled_scenario'] = scenario
+    alt['modeled_alt'] = alternative
+
     def station_in_modeled_alt(row):
         alt_num = row['modeled_alt']
         alt_col = 'alt{}'.format(alt_num)
@@ -70,40 +76,37 @@ def metrics(net, hdf, stations, scenario, alternative, pj, dist=805, out='city_r
         else:
             return 0
 
-    # Load station DataFrame as well
-    alt = stations.set_index('station')
-    alt['modeled_scenario'] = scenario
-    alt['modeled_alt'] = alternative
-
     alt['station_in_modeled_alt'] = alt.apply(station_in_modeled_alt, axis=1)
-    alt = alt[alt['station_in_modeled_alt'] == 1]
+    alt = alt[alt['station_in_modeled_alt']] == 1
 
-    net = Network(node_x=nodes['x'],
-                  node_y=nodes['y'],
-                  edge_from=edges['from'],
-                  edge_to=edges['to'],
-                  edge_weights=edges[['weight']])
+    if len(alt) > 0:
 
-    # Set POIs in pandana network and do nearest neighbor analysis
-    parcels['node_id'] = net.get_node_ids(parcels.x, parcels.y)
-    net.init_pois(num_categories=1, max_dist=805.0, max_pois=1)
-    net.set_pois("tmp", alt.x, alt.y)
-    nearest = net.nearest_pois(dist, "tmp", num_pois=1, include_poi_ids=True)
-    nearest.columns = ['dist', 'station']
+        net = Network(node_x=nodes['x'],
+                      node_y=nodes['y'],
+                      edge_from=edges['from'],
+                      edge_to=edges['to'],
+                      edge_weights=edges[['weight']])
 
-    # Join to parcels and filter for those within half mile
-    parcels_stations = parcels.merge(nearest, how='left', left_on='node_id', right_index=True)
-    parcels_stations = parcels_stations[~parcels_stations.station.isnull()]
+        # Set POIs in pandana network and do nearest neighbor analysis
+        parcels['node_id'] = net.get_node_ids(parcels.x, parcels.y)
+        net.init_pois(num_categories=1, max_dist=805.0, max_pois=1)
+        net.set_pois("tmp", alt.x, alt.y)
+        nearest = net.nearest_pois(dist, "tmp", num_pois=1, include_poi_ids=True)
+        nearest.columns = ['dist', 'station']
 
-    # Join stations to households and jobs
-    buildings['station'] = misc.reindex(parcels_stations.station, buildings.parcel_id)
-    households['station'] = misc.reindex(buildings['station'], households.building_id)
-    jobs['station'] = misc.reindex(buildings['station'], jobs.building_id)
+        # Join to parcels and filter for those within half mile
+        parcels_stations = parcels.merge(nearest, how='left', left_on='node_id', right_index=True)
+        parcels_stations = parcels_stations[~parcels_stations.station.isnull()]
 
-    # Filter for those within station buffer
-    buildings_stations = buildings[~buildings.station.isnull()]
-    households_stations = households[~households.station.isnull()]
-    jobs_stations = jobs[~jobs.station.isnull()]
+        # Join stations to households and jobs
+        buildings['station'] = misc.reindex(parcels_stations.station, buildings.parcel_id)
+        households['station'] = misc.reindex(buildings['station'], households.building_id)
+        jobs['station'] = misc.reindex(buildings['station'], jobs.building_id)
+
+        # Filter for those within station buffer
+        buildings_stations = buildings[~buildings.station.isnull()]
+        households_stations = households[~households.station.isnull()]
+        jobs_stations = jobs[~jobs.station.isnull()]
 
     baseline = True if '2015_09_01_bayarea_v3' in hdf else False
 
@@ -115,22 +118,10 @@ def metrics(net, hdf, stations, scenario, alternative, pj, dist=805, out='city_r
         p = parcels_cities[parcels_cities.juris == index]
         b = buildings_cities[buildings_cities.juris == index]
 
-        hs = households_stations[households_stations.juris == index]
-        js = jobs_stations[jobs_stations.juris == index]
-        ps = parcels_stations[parcels_stations.juris == index]
-        bs = buildings_stations[buildings_stations.juris == index]
-
         df.loc[index, 'population'] = hh.persons.sum()
-        df.loc[index, 'population_pct_station_area'] = hs.persons.sum() / hh.persons.sum()
-
         df.loc[index, 'households'] = len(hh)
-        df.loc[index, 'households_pct_station_area'] = len(hs) / len(hh)
-
         df.loc[index, 'jobs'] = len(j)
-        df.loc[index, 'jobs_pct_station_area'] = len(js) / len(j)
-
         df.loc[index, 'income_median'] = hh.income.median()
-        df.loc[index, 'income_median_station_area'] = hs.income.median()
 
         for i in range(1, 5):
             df.loc[index, 'income_quartile{}_count'.format(i)] = len(hh[hh.income_quartile == i])
@@ -153,6 +144,17 @@ def metrics(net, hdf, stations, scenario, alternative, pj, dist=805, out='city_r
                 df.loc[index, 'soft_site_pct'] = len(p[p.zoned_du_underbuild >= 1]) / len(p)
             except ZeroDivisionError:
                 df.loc[index, 'soft_site_pct'] = 0
+
+        if len(alt) > 0:
+            hs = households_stations[households_stations.juris == index]
+            js = jobs_stations[jobs_stations.juris == index]
+            ps = parcels_stations[parcels_stations.juris == index]
+            bs = buildings_stations[buildings_stations.juris == index]
+
+            df.loc[index, 'jobs_pct_station_area'] = len(js) / len(j)
+            df.loc[index, 'population_pct_station_area'] = hs.persons.sum() / hh.persons.sum()
+            df.loc[index, 'households_pct_station_area'] = len(hs) / len(hh)
+            df.loc[index, 'income_median_station_area'] = hs.income.median()
 
             try:
                 df.loc[index, 'soft_site_pct_station_area'] = (len(ps[ps.zoned_du_underbuild >= 1]) /
