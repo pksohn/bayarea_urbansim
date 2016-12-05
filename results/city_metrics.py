@@ -132,10 +132,8 @@ def metrics(net, hdf, stations, scenario, alternative, pj, dist=805, out='city_r
                 df.loc[index, 'income_quartile{}_pct'.format(i)] = 0
 
         df.loc[index, 'res_units'] = b.residential_units.sum()
-        df.loc[index, 'res_units_pct_station_area'] = bs.residential_units.sum() / b.residential_units.sum()
 
         df.loc[index, 'nonres_sqft'] = b.non_residential_sqft.sum()
-        df.loc[index, 'nonres_sqft_pct_station_area'] = bs.non_residential_sqft.sum() / b.non_residential_sqft.sum()
 
         if not baseline:
             df.loc[index, 'soft_site_count'] = len(p[p.zoned_du_underbuild >= 1])
@@ -155,6 +153,8 @@ def metrics(net, hdf, stations, scenario, alternative, pj, dist=805, out='city_r
             df.loc[index, 'population_pct_station_area'] = hs.persons.sum() / hh.persons.sum()
             df.loc[index, 'households_pct_station_area'] = len(hs) / len(hh)
             df.loc[index, 'income_median_station_area'] = hs.income.median()
+            df.loc[index, 'res_units_pct_station_area'] = bs.residential_units.sum() / b.residential_units.sum()
+            df.loc[index, 'nonres_sqft_pct_station_area'] = bs.non_residential_sqft.sum() / b.non_residential_sqft.sum()
 
             try:
                 df.loc[index, 'soft_site_pct_station_area'] = (len(ps[ps.zoned_du_underbuild >= 1]) /
