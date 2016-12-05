@@ -17,7 +17,7 @@ def income_quartile(df):
         df['income_quartile'] = s
 
 
-def metrics(net, hdf, stations, scenario, alternative, dist=805, out='city_results.csv'):
+def metrics(net, hdf, stations, scenario, alternative, pj, dist=805, out='city_results.csv'):
     with pd.HDFStore(net) as store:
         print 'Loading {}'.format(net)
         edges = store.edges
@@ -38,6 +38,10 @@ def metrics(net, hdf, stations, scenario, alternative, dist=805, out='city_resul
     df = pd.DataFrame(index=cities)
     df['modeled_scenario'] = scenario
     df['modeled_alt'] = alternative
+
+    if 'juris' not in parcels.columns:
+        parcels_jurisdictions = pd.read_csv(pj)
+        parcels = parcels.merge(parcels_jurisdictions[['geom_id', 'juris']], on='geom_id')
 
     # Filter parcels for those within cities
     parcels_cities = parcels[parcels.juris.isin(cities)]
@@ -67,8 +71,9 @@ def metrics(net, hdf, stations, scenario, alternative, dist=805, out='city_resul
             return 0
 
     # Load station DataFrame as well
-    alt = stations[stations.alternative == alternative].set_index('station')
+    alt = stations.set_index('station')
     alt['station_in_modeled_alt'] = alt.apply(station_in_modeled_alt, axis=1)
+    alt = alt[alt['station_in_modeled_alt'] == 1]
 
     net = Network(node_x=nodes['x'],
                   node_y=nodes['y'],
@@ -163,6 +168,7 @@ if __name__ == '__main__':
     parser.add_argument('--stations', type=str, help='CSV file with stations')
     parser.add_argument('--scen', type=str, help='Which scenario')
     parser.add_argument('--alt', type=int, help='Which alternative')
+    parser.add_argument('--pj', type=int, help='Parcels - jurisdictions file')
     parser.add_argument('--dist', type=int, help='Distance in meters to perform nearest neighbor within')
     parser.add_argument('--out', type=str, help='Filepath to save csv to')
     args = parser.parse_args()
@@ -180,5 +186,6 @@ if __name__ == '__main__':
             stations=args.stations,
             scenario=args.scen,
             alternative=args.alt,
+            pj=args.pj,
             dist=dist,
             out=out)
