@@ -1,6 +1,4 @@
 from __future__ import division
-import os
-import sys
 import pandas as pd
 import argparse
 from pandana.network import Network
@@ -10,8 +8,16 @@ from urbansim.utils import misc
 pd.set_option('display.float_format', lambda x: '%.3f' % x)
 
 
-def metrics(net, hdf, stations, scenario, alternative, dist=805, out='city_results.csv'):
+def income_quartile(df):
+    # Calculate income_quartile if nonexistent (i.e. in baseline data)
+    if 'income_quartile' not in df.columns:
+        s = pd.Series(pd.qcut(df.income, 4, labels=False), index=df.index)
+        # convert income quartile from 0-3 to 1-4
+        s = s.add(1)
+        df['income_quartile'] = s
 
+
+def metrics(net, hdf, stations, scenario, alternative, dist=805, out='city_results.csv'):
     with pd.HDFStore(net) as store:
         print 'Loading {}'.format(net)
         edges = store.edges
@@ -27,14 +33,42 @@ def metrics(net, hdf, stations, scenario, alternative, dist=805, out='city_resul
     print 'Loading {}'.format(stations)
     stations = pd.read_csv(stations)
 
+    # Create DataFrame indexed by cities
     cities = ['San Francisco', 'Oakland', 'Emeryville', 'Berkeley', 'Richmond', 'Walnut Creek']
     df = pd.DataFrame(index=cities)
     df['modeled_scenario'] = scenario
     df['modeled_alt'] = alternative
 
+    # Filter parcels for those within cities
+    parcels_cities = parcels[parcels.juris_name.isin(cities)]
 
+    # Join stations to households and jobs
+    buildings['juris_name'] = misc.reindex(parcels_cities.juris_name, buildings.parcel_id)
+    households['juris_name'] = misc.reindex(buildings['juris_name'], households.building_id)
+    jobs['juris_name'] = misc.reindex(buildings['juris_name'], jobs.building_id)
 
-    alt = stations.set_index('station')
+    # Filter for those within target cities
+    buildings_cities = buildings[~buildings.juris_name.isnull()]
+    households_cities = households[~households.juris_name.isnull()]
+    jobs_cities = jobs[~jobs.juris_name.isnull()]
+
+    # Calculate income quartiles
+    income_quartile(households_cities)
+
+    def station_in_modeled_alt(row):
+        alt_num = row['modeled_alt']
+        alt_col = 'alt{}'.format(alt_num)
+        if alt_col in alt.columns:
+            if row[alt_col] == 1:
+                return 1
+            else:
+                return 0
+        else:
+            return 0
+
+    # Load station DataFrame as well
+    alt = stations[stations.alternative == alternative].set_index('station')
+    alt['station_in_modeled_alt'] = alt.apply(station_in_modeled_alt, axis=1)
 
     net = Network(node_x=nodes['x'],
                   node_y=nodes['y'],
@@ -53,25 +87,15 @@ def metrics(net, hdf, stations, scenario, alternative, dist=805, out='city_resul
     parcels_stations = parcels.merge(nearest, how='left', left_on='node_id', right_index=True)
     parcels_stations = parcels_stations[~parcels_stations.station.isnull()]
 
-    # Filter parcels for those within cities
-    parcels_cities = parcels[parcels.juris_name.isin(cities)]
-
     # Join stations to households and jobs
-    buildings['juris_name'] = misc.reindex(parcels_cities.juris_name, buildings.parcel_id)
-    households['juris_name'] = misc.reindex(buildings['juris_name'], households.building_id)
-    jobs['juris_name'] = misc.reindex(buildings['juris_name'], jobs.building_id)
+    buildings['station'] = misc.reindex(parcels_stations.station, buildings.parcel_id)
+    households['station'] = misc.reindex(buildings['station'], households.building_id)
+    jobs['station'] = misc.reindex(buildings['station'], jobs.building_id)
 
     # Filter for those within station buffer
-    buildings_cities = buildings[~buildings.juris_name.isnull()]
-    households_cities = households[~households.juris_name.isnull()]
-    jobs_cities = jobs[~jobs.juris_name.isnull()]
-
-    # Calculate income_quartile if nonexistent (i.e. in baseline data)
-    if 'income_quartile' not in households_cities.columns:
-        s = pd.Series(pd.qcut(households_cities.income, 4, labels=False), index=households_cities.index)
-        # convert income quartile from 0-3 to 1-4
-        s = s.add(1)
-        households_cities['income_quartile'] = s
+    buildings_stations = buildings[~buildings.station.isnull()]
+    households_stations = households[~households.station.isnull()]
+    jobs_stations = jobs[~jobs.station.isnull()]
 
     baseline = True if '2015_09_01_bayarea_v3' in hdf else False
 
@@ -83,10 +107,22 @@ def metrics(net, hdf, stations, scenario, alternative, dist=805, out='city_resul
         p = parcels_cities[parcels_cities.juris_name == index]
         b = buildings_cities[buildings_cities.juris_name == index]
 
+        hs = households_stations[households_stations.juris_name == index]
+        js = jobs_stations[jobs_stations.juris_name == index]
+        ps = parcels_stations[parcels_stations.juris_name == index]
+        bs = buildings_stations[buildings_stations.juris_name == index]
+
         df.loc[index, 'population'] = hh.persons.sum()
+        df.loc[index, 'population_pct_station_area'] = hs.persons.sum() / hh.persons.sum()
+
         df.loc[index, 'households'] = len(hh)
+        df.loc[index, 'households_pct_station_area'] = len(hs) / len(hh)
+
         df.loc[index, 'jobs'] = len(j)
+        df.loc[index, 'jobs_pct_station_area'] = len(js) / len(j)
+
         df.loc[index, 'income_median'] = hh.income.median()
+        df.loc[index, 'income_median_station_area'] = hs.income.median()
 
         for i in range(1, 5):
             df.loc[index, 'income_quartile{}_count'.format(i)] = len(hh[hh.income_quartile == i])
@@ -97,7 +133,10 @@ def metrics(net, hdf, stations, scenario, alternative, dist=805, out='city_resul
                 df.loc[index, 'income_quartile{}_pct'.format(i)] = 0
 
         df.loc[index, 'res_units'] = b.residential_units.sum()
+        df.loc[index, 'res_units_pct_station_area'] = bs.residential_units.sum() / b.residential_units.sum()
+
         df.loc[index, 'nonres_sqft'] = b.non_residential_sqft.sum()
+        df.loc[index, 'nonres_sqft_pct_station_area'] = bs.non_residential_sqft.sum() / b.non_residential_sqft.sum()
 
         if not baseline:
             df.loc[index, 'soft_site_count'] = len(p[p.zoned_du_underbuild >= 1])
@@ -107,7 +146,14 @@ def metrics(net, hdf, stations, scenario, alternative, dist=805, out='city_resul
             except ZeroDivisionError:
                 df.loc[index, 'soft_site_pct'] = 0
 
+            try:
+                df.loc[index, 'soft_site_pct_station_area'] = (len(ps[ps.zoned_du_underbuild >= 1]) /
+                                                               len(p[p.zoned_du_underbuild >= 1]))
+            except ZeroDivisionError:
+                df.loc[index, 'soft_site_pct_station_area'] = 0
+
     df.to_csv(out)
+
 
 if __name__ == '__main__':
     # Parse command line arguments
@@ -123,7 +169,7 @@ if __name__ == '__main__':
 
     # Define defaults and modify with command line arguments
     dist = 805
-    out = 'station_area_results.csv'
+    out = 'city_results.csv'
     if args.dist:
         dist = args.dist
     if args.out:
