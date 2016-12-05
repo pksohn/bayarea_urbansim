@@ -40,17 +40,17 @@ def metrics(net, hdf, stations, scenario, alternative, dist=805, out='city_resul
     df['modeled_alt'] = alternative
 
     # Filter parcels for those within cities
-    parcels_cities = parcels[parcels.juris_name.isin(cities)]
+    parcels_cities = parcels[parcels.juris.isin(cities)]
 
     # Join stations to households and jobs
-    buildings['juris_name'] = misc.reindex(parcels_cities.juris_name, buildings.parcel_id)
-    households['juris_name'] = misc.reindex(buildings['juris_name'], households.building_id)
-    jobs['juris_name'] = misc.reindex(buildings['juris_name'], jobs.building_id)
+    buildings['juris'] = misc.reindex(parcels_cities.juris, buildings.parcel_id)
+    households['juris'] = misc.reindex(buildings['juris'], households.building_id)
+    jobs['juris'] = misc.reindex(buildings['juris'], jobs.building_id)
 
     # Filter for those within target cities
-    buildings_cities = buildings[~buildings.juris_name.isnull()]
-    households_cities = households[~households.juris_name.isnull()]
-    jobs_cities = jobs[~jobs.juris_name.isnull()]
+    buildings_cities = buildings[~buildings.juris.isnull()]
+    households_cities = households[~households.juris.isnull()]
+    jobs_cities = jobs[~jobs.juris.isnull()]
 
     # Calculate income quartiles
     income_quartile(households_cities)
@@ -102,15 +102,15 @@ def metrics(net, hdf, stations, scenario, alternative, dist=805, out='city_resul
     # Get dataframe of metrics by city
     for index, series in df.iterrows():
 
-        hh = households_cities[households_cities.juris_name == index]
-        j = jobs_cities[jobs_cities.juris_name == index]
-        p = parcels_cities[parcels_cities.juris_name == index]
-        b = buildings_cities[buildings_cities.juris_name == index]
+        hh = households_cities[households_cities.juris == index]
+        j = jobs_cities[jobs_cities.juris == index]
+        p = parcels_cities[parcels_cities.juris == index]
+        b = buildings_cities[buildings_cities.juris == index]
 
-        hs = households_stations[households_stations.juris_name == index]
-        js = jobs_stations[jobs_stations.juris_name == index]
-        ps = parcels_stations[parcels_stations.juris_name == index]
-        bs = buildings_stations[buildings_stations.juris_name == index]
+        hs = households_stations[households_stations.juris == index]
+        js = jobs_stations[jobs_stations.juris == index]
+        ps = parcels_stations[parcels_stations.juris == index]
+        bs = buildings_stations[buildings_stations.juris == index]
 
         df.loc[index, 'population'] = hh.persons.sum()
         df.loc[index, 'population_pct_station_area'] = hs.persons.sum() / hh.persons.sum()
