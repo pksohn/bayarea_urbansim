@@ -168,7 +168,7 @@ if __name__ == '__main__':
     parser.add_argument('--stations', type=str, help='CSV file with stations')
     parser.add_argument('--scen', type=str, help='Which scenario')
     parser.add_argument('--alt', type=int, help='Which alternative')
-    parser.add_argument('--pj', type=int, help='Parcels - jurisdictions file')
+    parser.add_argument('--pj', type=str, help='Parcels - jurisdictions file')
     parser.add_argument('--dist', type=int, help='Distance in meters to perform nearest neighbor within')
     parser.add_argument('--out', type=str, help='Filepath to save csv to')
     args = parser.parse_args()
