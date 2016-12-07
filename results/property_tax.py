@@ -10,7 +10,6 @@ pd.set_option('display.float_format', lambda x: '%.3f' % x)
 
 def summary(hdf, out, alternative,
             counties=False, station_csv=None, net=None):
-
     baseline = True if '2015_09_01_bayarea_v3' in hdf else False
 
     with pd.HDFStore(hdf) as store:
@@ -87,16 +86,16 @@ def summary(hdf, out, alternative,
     p['nonres_sqft'] = b_sum_p.non_residential_sqft
 
     if baseline:
-        p['res_value'] = (b_sum_p.res_price_per_sqft.fillna(0) *
-                          b_sum_p.nonres_rent_per_sqft.fillna(0))
-        p['nonres_value'] = (b_sum_p.non_residential_price.fillna(0) *
-                             b_sum_p.non_residential_sqft.fillna(0))
+        b_sum_p['res_value'] = (b_sum_p.res_price_per_sqft.fillna(0) *
+                                b_sum_p.residential_sqft.fillna(0))
+        b_sum_p['nonres_value'] = (b_sum_p.nonres_rent_per_sqft.fillna(0) *
+                                   b_sum_p.non_residential_sqft.fillna(0))
 
     else:
-        p['res_value'] = (b_sum_p.residential_price.fillna(0) *
-                          b_sum_p.residential_sqft.fillna(0))
-        p['nonres_value'] = (b_sum_p.non_residential_price.fillna(0) *
-                             b_sum_p.non_residential_sqft.fillna(0))
+        b_sum_p['res_value'] = (b_sum_p.residential_price.fillna(0) *
+                                b_sum_p.residential_sqft.fillna(0))
+        b_sum_p['nonres_value'] = (b_sum_p.non_residential_price.fillna(0) *
+                                   b_sum_p.non_residential_sqft.fillna(0))
 
     p['total_improvement_value'] = b_sum_p.res_value + b_sum_p.nonres_value
     p['property_value'] = (p.land_value.fillna(0) +
