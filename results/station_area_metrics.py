@@ -109,6 +109,7 @@ def metrics(net, hdf, stations, scenario, alternative, dist=805, out='station_ar
                 except ZeroDivisionError:
                     alt.loc[index, 'income_quartile{}_pct'.format(i)] = 0
 
+            alt.loc[index, 'buildings'] = len(b)
             alt.loc[index, 'res_units'] = b.residential_units.sum()
             alt.loc[index, 'nonres_sqft'] = b.non_residential_sqft.sum()
 

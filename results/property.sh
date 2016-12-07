@@ -9,6 +9,11 @@ STATIONS=./../data/stations_metrics_unique.csv
 python ${SCRIPT} --hdf ./../data/2015_09_01_bayarea_v3.h5 --alt 99 --out 'property_tax_2010.csv'
 python ${SCRIPT} --hdf ./../data/2015_09_01_bayarea_v3.h5 --alt 99 --county 1 --out 'property_tax_2010_county.csv'
 
+python ${SCRIPT} --hdf ./../data/2015_09_01_bayarea_v3.h5 --net ${NET} --stations ${STATIONS} --alt 1 --out 'property_tax_2010_alt1.csv'
+python ${SCRIPT} --hdf ./../data/2015_09_01_bayarea_v3.h5 --net ${NET} --stations ${STATIONS} --alt 2 --out 'property_tax_2010_alt2.csv'
+python ${SCRIPT} --hdf ./../data/2015_09_01_bayarea_v3.h5 --net ${NET} --stations ${STATIONS} --alt 3 --out 'property_tax_2010_alt3.csv'
+python ${SCRIPT} --hdf ./../data/2015_09_01_bayarea_v3.h5 --net ${NET} --stations ${STATIONS} --alt 4 --out 'property_tax_2010_alt4.csv'
+
 # Scenario 0, no project, for all station location sets, 2035 (run 26)
 
 python ${SCRIPT} --hdf ./../runs/studio_run26_2035.h5 --alt 99 --out 'property_tax_nobuild_scen0_2035.csv'
