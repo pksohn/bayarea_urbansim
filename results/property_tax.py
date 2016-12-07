@@ -51,7 +51,7 @@ def summary(hdf, out, alternative,
         alt['station_in_modeled_alt'] = alt.apply(station_in_modeled_alt, axis=1)
 
         alt = alt[(alt.station_in_modeled_alt == 1) |
-                  (alt.station == 'placeholder')]
+                  (alt.index == 'placeholder')]
 
         print alt
 
