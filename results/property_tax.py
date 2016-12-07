@@ -36,22 +36,27 @@ def summary(hdf, out, alternative,
         alt = stations.set_index('station')
         alt['modeled_alt'] = alternative
 
-        def station_in_modeled_alt(row):
+        # def station_in_modeled_alt(row):
+        #
+        #     alt_num = row['modeled_alt']
+        #     alt_col = 'alt{}'.format(alt_num)
+        #     if alt_col in alt.columns:
+        #         if row[alt_col] == 1:
+        #             return 1
+        #         else:
+        #             return 0
+        #     else:
+        #         return 0
 
-            alt_num = row['modeled_alt']
-            alt_col = 'alt{}'.format(alt_num)
-            if alt_col in alt.columns:
-                if row[alt_col] == 1:
-                    return 1
-                else:
-                    return 0
-            else:
-                return 0
+        # alt['station_in_modeled_alt'] = alt.apply(station_in_modeled_alt, axis=1)
 
-        alt['station_in_modeled_alt'] = alt.apply(station_in_modeled_alt, axis=1)
+        alt_col = 'alt{}'.format(alternative)
+        if alt_col in alt.columns:
+            alt = alt.loc[(alt[alt_col] == 1) |
+                          (alt.index == 'placeholder')]
 
-        alt = alt[(alt.station_in_modeled_alt == 1) |
-                  (alt.index == 'placeholder')]
+        # alt = alt[(alt.station_in_modeled_alt == 1) |
+        #           (alt.index == 'placeholder')]
 
         print alt
 
