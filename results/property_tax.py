@@ -56,7 +56,7 @@ def summary(hdf, out, alternative,
         p['node_id'] = net.get_node_ids(p.x, p.y)
         net.init_pois(num_categories=1, max_dist=805.0, max_pois=1)
         net.set_pois("tmp", alt.x, alt.y)
-        nearest = net.nearest_pois(806, "tmp", num_pois=1, include_poi_ids=True)
+        nearest = net.nearest_pois(805, "tmp", num_pois=1, include_poi_ids=True)
         nearest.columns = ['dist', 'station']
 
         # Join to parcels and filter for those within half mile
