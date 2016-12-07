@@ -137,18 +137,18 @@ if __name__ == '__main__':
     parser.add_argument('--hdf', type=str, help='HDF5 file with households, parcels, buildings, and jobs tables')
     parser.add_argument('--out', type=str, help='Filepath to save csv to')
     parser.add_argument('--alt', type=int, help='Alternative number')
-    parser.add_argument('--counties', type=int, help='County level output')
-    parser.add_argument('--station', type=str, help='Stations CSV file')
+    parser.add_argument('--county', type=int, help='County level output')
+    parser.add_argument('--stations', type=str, help='Stations CSV file')
     parser.add_argument('--net', type=str, help='Network HDF5 file')
     args = parser.parse_args()
 
     alt, counties, station, net = 99, False, None, None
     if args.alt:
         alt = args.alt
-    if (args.counties) & (args.counties == 1):
+    if args.county:
         counties = True
-    if args.station:
-        station = args.station
+    if args.stations:
+        station = args.stations
     if args.net:
         net = args.net
 
