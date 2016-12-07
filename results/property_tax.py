@@ -50,7 +50,10 @@ def summary(hdf, out, alternative,
 
         alt['station_in_modeled_alt'] = alt.apply(station_in_modeled_alt, axis=1)
 
-        alt = alt[alt.station_in_modeled_alt == 1]
+        alt = alt[(alt.station_in_modeled_alt == 1) |
+                  (alt.station == 'placeholder')]
+
+        print alt
 
         # Set POIs in pandana network and do nearest neighbor analysis
         p['node_id'] = net.get_node_ids(p.x, p.y)
