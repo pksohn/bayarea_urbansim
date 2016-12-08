@@ -9,7 +9,7 @@ pd.set_option('display.float_format', lambda x: '%.3f' % x)
 
 
 def summary(hdf, out, alternative,
-            counties=False, station_csv=None, net=None):
+            counties=False, station_csv=None, net=None, single_station=None):
     baseline = True if '2015_09_01_bayarea_v3' in hdf else False
 
     with pd.HDFStore(hdf) as store:
@@ -50,13 +50,14 @@ def summary(hdf, out, alternative,
 
         # alt['station_in_modeled_alt'] = alt.apply(station_in_modeled_alt, axis=1)
 
-        alt_col = 'alt{}'.format(alternative)
-        if alt_col in alt.columns:
-            alt = alt.loc[(alt[alt_col] == 1) |
-                          (alt.index == 'placeholder')]
+        if single_station:
+            alt = alt.loc[alt.index.isin([single_station, 'placeholder'])]
 
-        # alt = alt[(alt.station_in_modeled_alt == 1) |
-        #           (alt.index == 'placeholder')]
+        else:
+            alt_col = 'alt{}'.format(alternative)
+            if alt_col in alt.columns:
+                alt = alt.loc[(alt[alt_col] == 1) |
+                              (alt.index == 'placeholder')]
 
         print alt
 
@@ -147,9 +148,10 @@ if __name__ == '__main__':
     parser.add_argument('--county', type=int, help='County level output')
     parser.add_argument('--stations', type=str, help='Stations CSV file')
     parser.add_argument('--net', type=str, help='Network HDF5 file')
+    parser.add_argument('--single', type=str, help='Name of single station to get results for')
     args = parser.parse_args()
 
-    alt, counties, station, net = 99, False, None, None
+    alt, counties, station, net, single = 99, False, None, None, None
     if args.alt:
         alt = args.alt
     if args.county:
@@ -158,10 +160,13 @@ if __name__ == '__main__':
         station = args.stations
     if args.net:
         net = args.net
+    if args.single:
+        single = args.single
 
     summary(hdf=args.hdf,
             out=args.out,
             alternative=alt,
             counties=counties,
             station_csv=station,
-            net=net)
+            net=net,
+            single_station=single)
