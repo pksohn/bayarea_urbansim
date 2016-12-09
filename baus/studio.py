@@ -36,8 +36,8 @@ def baseline_save_tables(households, buildings, parcels, jobs, zones, year, star
     if ((year - start_year) % save_step == 0) | (year == end_year):
 
         filename = 'runs/studio_run{}_{}.h5'.format(run_num, year)
-        for table in [households, buildings, jobs, zones]:
-            table.to_frame().to_hdf(filename, table.name)
+        # for table in [households, buildings, jobs, zones]:
+        #     table.to_frame().to_hdf(filename, table.name)
         parcels.to_frame(columns=['x', 'y', 'geom_id', 'zoned_du_underbuild']).to_hdf(filename, 'parcels')
 
 
