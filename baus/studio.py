@@ -24,6 +24,23 @@ def studio_save_tables(households, buildings, parcels, jobs, zones, year, start_
             table.to_frame().to_hdf(filename, table.name)
 
 
+@orca.step('baseline_save_tables')
+def baseline_save_tables(households, buildings, parcels, jobs, zones, year, start_year, end_year, save_step):
+    """
+    This orca step saves intermediate versions of data tables, for developing
+    visualization proofs of concept.
+    """
+
+    run_num = orca.get_injectable("run_number")
+
+    if ((year - start_year) % save_step == 0) | (year == end_year):
+
+        filename = 'runs/studio_run{}_{}.h5'.format(run_num, year)
+        for table in [households, buildings, jobs, zones]:
+            table.to_frame().to_hdf(filename, table.name)
+        parcels.to_frame(columns=['x', 'y', 'geom_id', 'zoned_du_underbuild']).to_hdf(filename, 'parcels')
+
+
 def return_on_cost(df):
     df['return_on_cost'] = df.max_profit.clip(1) / df.total_cost
     return df.return_on_cost.values / df.return_on_cost.sum()
