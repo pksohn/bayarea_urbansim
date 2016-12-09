@@ -98,6 +98,8 @@ if LOGS:
 def get_simulation_models(SCENARIO, SAVE):
 
     models = [
+        "neighborhood_vars",  # local accessibility vars
+        "regional_vars",  # regional accessibility vars
         "studio_save_tables"
     ]
 
