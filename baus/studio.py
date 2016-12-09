@@ -25,7 +25,7 @@ def studio_save_tables(households, buildings, parcels, jobs, zones, year, start_
 
 
 @orca.step('baseline_save_tables')
-def baseline_save_tables(households, buildings, parcels, jobs, zones, year, start_year, end_year, save_step):
+def baseline_save_tables(households, buildings, parcels, jobs, zones, parcels_zoning_calculations, year, start_year, end_year, save_step):
     """
     This orca step saves intermediate versions of data tables, for developing
     visualization proofs of concept.
@@ -38,7 +38,7 @@ def baseline_save_tables(households, buildings, parcels, jobs, zones, year, star
         filename = 'runs/studio_run{}_{}.h5'.format(run_num, year)
         # for table in [households, buildings, jobs, zones]:
         #     table.to_frame().to_hdf(filename, table.name)
-        parcels.to_frame(columns=['x', 'y', 'geom_id', 'zoned_du_underbuild']).to_hdf(filename, 'parcels')
+        parcels_zoning_calculations.to_frame().to_hdf(filename, 'parcels_zoning_calculations')
 
 
 def return_on_cost(df):
