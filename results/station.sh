@@ -11,6 +11,7 @@ python ${SCRIPT} --hdf ./../data/2015_09_01_bayarea_v3.h5 --net ${NET} --station
 # Scenario 0, no project, for all station location sets, 2035 (run 26)
 
 python ${SCRIPT} --hdf ./../runs/studio_run26_2035.h5 --net ${NET} --stations ${STATIONS} --alt 99 --scen 0 --out 'station_area_nobuild_scen0_2035.csv'
+python ${SCRIPT} --hdf ./../runs/studio_run26_2010.h5 --net ${NET} --stations ${STATIONS} --alt 99 --scen 0 --out 'station_area_nobuild_scen0_2010.csv'
 
 # Scenario 3, no project, for all station location sets, 2035 (run 28)
 

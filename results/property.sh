@@ -48,3 +48,28 @@ python ${SCRIPT} --hdf ./../runs/studio_run38_2035.h5 --net ${NET} --stations ${
 
 python ${SCRIPT} --hdf ./../runs/studio_run39_2035.h5 --net ${NET} --stations ${STATIONS} --alt 6 --out 'property_tax_scen0_alt6_2035.csv'
 python ${SCRIPT} --hdf ./../runs/studio_run40_2035.h5 --net ${NET} --stations ${STATIONS} --alt 6 --out 'property_tax_scen4_alt6_2035.csv'
+
+# 14th street only
+
+python ${SCRIPT} --hdf ./../data/2015_09_01_bayarea_v3.h5 --net ${NET} --stations ${STATIONS} --single '14th Street (Oakland)' --out 'property_tax_2010_14thSt.csv'
+
+# Alternative 1 (runs 29 and 30)
+
+python ${SCRIPT} --hdf ./../runs/studio_run29_2035.h5 --net ${NET} --stations ${STATIONS} --single '14th Street (Oakland)' --out 'property_tax_scen0_alt1_14thSt_2035.csv'
+python ${SCRIPT} --hdf ./../runs/studio_run30_2035.h5 --net ${NET} --stations ${STATIONS} --single '14th Street (Oakland)' --out 'property_tax_scen4_alt1_14thSt_2035.csv'
+
+# Alternative 2 (runs 35 and 36)
+
+python ${SCRIPT} --hdf ./../runs/studio_run35_2035.h5 --net ${NET} --stations ${STATIONS} --single '14th Street (Oakland)' --out 'property_tax_scen0_alt2_14thSt_2035.csv'
+python ${SCRIPT} --hdf ./../runs/studio_run36_2035.h5 --net ${NET} --stations ${STATIONS} --single '14th Street (Oakland)' --out 'property_tax_scen4_alt2_14thSt_2035.csv'
+
+# Alternative 5 (runs 37 and 38)
+
+python ${SCRIPT} --hdf ./../runs/studio_run37_2035.h5 --net ${NET} --stations ${STATIONS} --single '14th Street (Oakland)' --out 'property_tax_scen0_alt5_14thSt_2035.csv'
+python ${SCRIPT} --hdf ./../runs/studio_run38_2035.h5 --net ${NET} --stations ${STATIONS} --single '14th Street (Oakland)' --out 'property_tax_scen4_alt5_14thSt_2035.csv'
+
+# Alternative 6 (runs 39 and 40)
+
+python ${SCRIPT} --hdf ./../runs/studio_run39_2035.h5 --net ${NET} --stations ${STATIONS} --single '14th Street (Oakland)' --out 'property_tax_scen0_alt6_14thSt_2035.csv'
+python ${SCRIPT} --hdf ./../runs/studio_run40_2035.h5 --net ${NET} --stations ${STATIONS} --single '14th Street (Oakland)' --out 'property_tax_scen4_alt6_14thSt_2035.csv'
+
